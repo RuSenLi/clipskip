@@ -8,9 +8,7 @@
   <main class="w-[400px] h-[400px] p-2 text-gray-700">
     <div class="flex flex-wrap items-end mb-3">
       <arcticons-earth
-        class="size-9 text-info transition"
-        hover="cursor-pointer"
-        active="scale-90"
+        class="size-9 text-info transition hover:cursor-pointer active:scale-90"
       />
       <Combobox class="mx-2 grow" />
       <button class="btn btn-sm btn-info h-9">
