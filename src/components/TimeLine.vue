@@ -1,87 +1,61 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const startTime = ref<string>('')
+const endTiem = ref<string>('')
+</script>
 
 <template>
-  <ul class="timeline">
-    <li>
-      <div class="timeline-middle">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          class="w-5 h-5"
+  <ul class="timeline mb-5">
+    <li class="grid-rows-1 self-center mr-1">
+      <div class="timeline-start timeline-box items-center dark:bg-black">
+        <input
+          type="text"
+          placeholder="label"
+          class="w-14 outline-none dark:bg-black"
         >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-            clip-rule="evenodd"
-          />
-        </svg>
       </div>
-      <div class="timeline-start timeline-box">
-        start
-      </div>
-      <hr>
     </li>
-    <li>
-      <hr>
-      <div class="timeline-start timeline-box">
-        <input type="text" vlaue="01:12:00" class="w-12">
+    <li class="grid-rows-1">
+      <div class="timeline-start timeline-box dark:bg-black">
+        <input
+          v-model="startTime"
+          type="text"
+          placeholder="00:00:00"
+          class="w-12 outline-none dark:bg-black"
+        >
       </div>
       <div class="timeline-middle">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          class="w-5 h-5 text-primary"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-            clip-rule="evenodd"
-          />
-        </svg>
+        <bi-clock-fill class="siez-5 text-primary" />
       </div>
-      <hr class="bg-primary">
+      <hr :class="startTime && 'bg-primary'">
     </li>
-    <li>
-      <hr class="bg-primary">
-      <div class="timeline-middle">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          class="w-5 h-5 text-primary"
+    <li class="grid-rows-1">
+      <hr :class="startTime && 'bg-primary'">
+      <div class="timeline-start timeline-box dark:bg-black py-1 self-center">
+        <input
+          type="text"
+          placeholder="20 S"
+          class="w-8 outline-none dark:bg-black"
         >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-            clip-rule="evenodd"
-          />
-        </svg>
       </div>
-      <div class="timeline-start timeline-box">
-        01:12:30
+      <div class="timeline-middle">
+        <mingcute-arrows-right-fill class="text-primary" />
       </div>
-      <hr>
+      <hr :class="endTiem && 'bg-primary'">
     </li>
-    <li>
-      <hr>
-      <div class="timeline-middle">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          class="w-5 h-5"
+    <li class="grid-rows-1">
+      <hr :class="endTiem && 'bg-primary'">
+      <div class="timeline-start timeline-box dark:bg-black">
+        <input
+          v-model="endTiem"
+          placeholder="00:00:20"
+          type="text"
+          class="w-12 outline-none dark:bg-black"
         >
-          <path
-            fill-rule="evenodd"
-            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-            clip-rule="evenodd"
-          />
-        </svg>
       </div>
-      <div class="timeline-start timeline-box">
-        end
+      <div class="timeline-middle">
+        <bi-clock-fill class="siez-5 text-primary" />
       </div>
     </li>
   </ul>
