@@ -41,7 +41,7 @@ const filteredPeople = computed(() =>
           class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
         >
           <ComboboxInput
-            class="w-full py-2 pl-3 pr-10 text-sm leading-5 focus:outline-4 focus:outline-teal-500 focus:rounded-lg"
+            class="w-full py-2 pl-3 pr-10 text-sm leading-5 focus:outline-4 focus:outline-teal-500 focus:rounded-lg dark:focus:outline-teal-500"
             :display-value="(person) => person.name"
             @change="query = $event.target.value"
           />
@@ -58,13 +58,18 @@ const filteredPeople = computed(() =>
           @after-leave="query = ''"
         >
           <ComboboxOptions
-            class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm"
+            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm dark:bg-gray-200"
           >
             <div
               v-if="filteredPeople.length === 0 && query !== ''"
-              class="relative cursor-default select-none px-4 py-2 text-gray-700"
+              class="relative cursor-default select-none px-4 py-2 text-gray-700 text-center"
             >
               Nothing found.
+              <button
+                class="btn btn-block btn-sm mt-1 bg-teal-600 text-gray-200 hover:bg-teal-700 dark:border-none"
+              >
+                <tabler-plus />
+              </button>
             </div>
 
             <ComboboxOption

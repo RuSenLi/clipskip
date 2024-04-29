@@ -3,16 +3,47 @@
 <template>
   <header>
     <div class="divider-colorful" />
-    <Theme class="flex justify-end my-2 mr-2" />
+    <div class="flex flex-wrap items-center justify-end p-2 space-x-3">
+      <a
+        rel="noreferrer"
+        href="https://github.com/RuSenLi/clipskip"
+        target="_blank"
+        title="GitHub"
+      >
+        <bi-github class="size-7 icon-btn text-zinc-500 dark:text-zinc-400" />
+      </a>
+      <Theme class="flex items-center" />
+    </div>
   </header>
-  <main class="w-[400px] h-[400px] p-2 text-gray-700">
-    <div class="flex flex-wrap items-end mb-3">
-      <arcticons-earth
-        class="size-9 text-info transition hover:cursor-pointer active:scale-90"
-      />
+  <main class="w-[400px] h-[410px] p-2 flex flex-col">
+    <div class="flex flex-wrap items-end">
+      <arcticons-earth class="size-9 text-info icon-btn" />
       <Combobox class="mx-2 grow" />
-      <button class="btn btn-sm btn-info h-9">
-        <tabler-plus />
+      <!-- <button class="btn btn-sm btn-success box-border h-9 text-zinc-50">
+        <mingcute-check-2-fill class="text-xl" />
+      </button> -->
+      <div
+        class="tooltip tooltip-error before:-left-5 before:text-zinc-50 before:tracking-widest"
+        data-tip="未找到视频，请重试"
+      >
+        <button
+          class="btn btn-sm h-9 box-border bg-red-500 text-zinc-50 hover:bg-red-600"
+        >
+          <mdi-refresh class="text-xl" />
+        </button>
+      </div>
+    </div>
+    <div
+      class="flex-1 overflow-y-auto border rounded-md shadow-md my-3 p-2 dark:border-indigo-400"
+    >
+      <TimeLine />
+    </div>
+    <div>
+      <button
+        class="btn btn-block bg-gradient-to-r from-cyan-500 to-blue-500 text-zinc-200 dark:bg-gradient-to-r dark:from-cyan-600 dark:to-purple-600"
+      >
+        <fluent-save-24-regular class="text-lg" />
+        <span class="text-xl">save</span>
       </button>
     </div>
   </main>
