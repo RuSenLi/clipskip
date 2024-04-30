@@ -1,4 +1,25 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { sendMessage } from "webext-bridge/popup";
+import { storageSelectedUrl, storageComboboxOptions } from "~/logic/storage";
+
+async function getTabUrl() {
+  try {
+    const { url } = await sendMessage("get-current-tab", {});
+    const currentOption = storageComboboxOptions.value.find(
+      (i) => i.value === url
+    );
+    if (!currentOption) {
+      storageComboboxOptions.value[0] = { value: url, label: "current page" };
+    } else {
+      storageSelectedUrl.value = currentOption.value;
+    }
+    storageSelectedUrl.value = url;
+  } catch (error) {
+    console.error(error);
+  }
+}
+getTabUrl();
+</script>
 
 <template>
   <header>
@@ -17,8 +38,12 @@
   </header>
   <main class="w-[400px] h-[410px] p-2 flex flex-col">
     <div class="flex flex-wrap items-end">
-      <arcticons-earth class="size-9 text-info icon-btn" />
-      <Combobox class="mx-2 grow" />
+      <arcticons-earth class="size-9 text-info icon-btn" @click="getTabUrl" />
+      <Combobox
+        class="mx-2 grow"
+        v-model:selected="storageSelectedUrl"
+        v-model:options="storageComboboxOptions"
+      />
       <!-- <button class="btn btn-sm btn-success box-border h-9 text-zinc-50">
         <mingcute-check-2-fill class="text-xl" />
       </button> -->
@@ -34,7 +59,7 @@
       </div>
     </div>
     <div
-      class="flex-1 overflow-y-auto border rounded-md shadow-md my-3 p-2 dark:border-indigo-400"
+      class="flex-1 z-10 overflow-y-auto border rounded-md shadow-md my-3 p-2 dark:border-indigo-400"
     >
       <TimeLine />
     </div>

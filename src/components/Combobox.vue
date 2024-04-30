@@ -1,5 +1,5 @@
-<script setup leng="ts">
-import { computed, ref } from 'vue'
+<script setup lang="ts">
+import { computed, ref } from "vue";
 import {
   Combobox,
   ComboboxButton,
@@ -7,42 +7,46 @@ import {
   ComboboxOption,
   ComboboxOptions,
   TransitionRoot,
-} from '@headlessui/vue'
+} from "@headlessui/vue";
+import type { ComboboxOption as SelectOption } from "./types";
 
-const people = [
-  { id: 1, name: 'Wade Cooper' },
-  { id: 2, name: 'Arlene Mccoy' },
-  { id: 3, name: 'Devon Webb' },
-  { id: 4, name: 'Tom Cook' },
-  { id: 5, name: 'Tanya Fox' },
-  { id: 6, name: 'Hellen Schmidt' },
-]
+const select = defineModel<string>("selected");
+const options = defineModel<SelectOption[]>("options");
 
-const selected = ref(people[0])
-const query = ref('')
+const query = ref("");
 
-const filteredPeople = computed(() =>
-  query.value === ''
-    ? people
-    : people.filter(person =>
-      person.name
-        .toLowerCase()
-        .replace(/\s+/g, '')
-        .includes(query.value.toLowerCase().replace(/\s+/g, '')),
-    ),
-)
+function hasQuery(str: string) {
+  return str
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .includes(query.value.toLowerCase().replace(/\s+/g, ""));
+}
+
+const filteredOption = computed(() => {
+  if (!options.value) {
+    return [];
+  }
+
+  if (query.value === "") {
+    return options.value;
+  }
+
+  return options.value.filter(
+    (item) => hasQuery(item.value) || hasQuery(item.label)
+  );
+});
 </script>
 
 <template>
   <div>
-    <Combobox v-model="selected">
+    <Combobox v-model="select" nullable>
       <div class="relative mt-1">
         <div
           class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
         >
           <ComboboxInput
             class="w-full py-2 pl-3 pr-10 text-sm leading-5 focus:outline-4 focus:outline-teal-500 focus:rounded-lg dark:focus:outline-teal-500"
-            :display-value="(person) => person.name"
+            :display-value="(i: any) => i.value"
             @change="query = $event.target.value"
           />
           <ComboboxButton
@@ -58,10 +62,10 @@ const filteredPeople = computed(() =>
           @after-leave="query = ''"
         >
           <ComboboxOptions
-            class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm dark:bg-gray-200"
+            class="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm dark:bg-gray-200"
           >
             <div
-              v-if="filteredPeople.length === 0 && query !== ''"
+              v-if="filteredOption.length === 0 && query !== ''"
               class="relative cursor-default select-none px-4 py-2 text-gray-700 text-center"
             >
               Nothing found.
@@ -73,13 +77,14 @@ const filteredPeople = computed(() =>
             </div>
 
             <ComboboxOption
-              v-for="person in filteredPeople"
-              :key="person.id"
+              v-for="option in filteredOption"
+              :key="option.id || option.value"
               v-slot="{ selected, active }"
               as="template"
-              :value="person"
+              :value="option.value"
             >
               <li
+                id="option.id || option.value"
                 class="relative cursor-default select-none py-2 pl-10 pr-4"
                 :class="{
                   'bg-teal-600 text-white': active,
@@ -87,10 +92,11 @@ const filteredPeople = computed(() =>
                 }"
               >
                 <span
-                  class="block truncate"
+                  class="block truncate text-lg"
                   :class="{ 'font-medium': selected, 'font-normal': !selected }"
-                >
-                  {{ person.name }}
+                > 
+                  {{ option.label }}
+                  <p class="text-base">{{ option.value }}</p>
                 </span>
                 <span
                   v-if="selected"

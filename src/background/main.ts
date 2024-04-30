@@ -10,7 +10,6 @@ if (import.meta.hot) {
 }
 
 browser.runtime.onInstalled.addListener((): void => {
-  // eslint-disable-next-line no-console
   console.log('Extension installed')
 })
 
@@ -43,12 +42,14 @@ onMessage('get-current-tab', async () => {
   try {
     const tab = await browser.tabs.get(previousTabId)
     return {
-      title: tab?.title,
+      title: tab?.title ?? '',
+      url: tab?.url ?? '',
     }
   }
   catch {
     return {
-      title: undefined,
+      title: '',
+      url: '',
     }
   }
 })
