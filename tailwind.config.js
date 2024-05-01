@@ -1,3 +1,5 @@
+import { blackA, green, grass, mauve } from '@radix-ui/colors'
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -5,7 +7,14 @@ module.exports = {
   ],
   darkMode: 'selector',
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        ...blackA,
+        ...green,
+        ...grass,
+        ...mauve,
+      },
+    },
   },
   plugins: [require('daisyui')],
   daisyui: { themes: ['light', 'dark'] },

@@ -10,6 +10,7 @@ import Components from 'unplugin-vue-components/vite'
 import AutoImport from 'unplugin-auto-import/vite'
 import { isDev, port, r } from './scripts/utils'
 import packageJson from './package.json'
+import RadixVueResolver from 'radix-vue/resolver'
 
 export const sharedConfig: UserConfig = {
   root: r('src'),
@@ -47,6 +48,7 @@ export const sharedConfig: UserConfig = {
         IconsResolver({
           prefix: '',
         }),
+        RadixVueResolver(),
       ],
     }),
 
