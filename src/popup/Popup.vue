@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { sendMessage } from "webext-bridge/popup";
-import { storageSelectedUrl, storageComboboxOptions } from "~/logic/storage";
+import { storageSelectedUrl, storageSelectedLabel, storageComboboxOptions } from "~/logic/storage";
 
 async function getTabUrl() {
   try {
@@ -10,10 +10,11 @@ async function getTabUrl() {
     );
     if (!currentOption) {
       storageComboboxOptions.value[0] = { value: url, label: "current page" };
+      storageSelectedUrl.value = url;
     } else {
       storageSelectedUrl.value = currentOption.value;
     }
-    storageSelectedUrl.value = url;
+    console.log('url: ', url)
   } catch (error) {
     console.error(error);
   }
@@ -39,10 +40,10 @@ getTabUrl();
   <main class="w-[400px] h-[410px] p-2 flex flex-col">
     <div class="flex flex-wrap items-end">
       <arcticons-earth class="size-9 text-info icon-btn" @click="getTabUrl" />
-      
       <Combobox
         class="mx-2 grow"
         v-model:selected="storageSelectedUrl"
+        v-model:label="storageSelectedLabel"
         v-model:options="storageComboboxOptions"
       />
       <!-- <button class="btn btn-sm btn-success box-border h-9 text-zinc-50">
