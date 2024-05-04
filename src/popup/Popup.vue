@@ -1,25 +1,45 @@
 <script setup lang="ts">
 import { sendMessage } from "webext-bridge/popup";
-import { storageSelectedUrl, storageSelectedLabel, storageComboboxOptions } from "~/logic/storage";
+import { storageselectedOption, storagePageOptions } from "~/logic/storage";
+import { ref, computed } from "vue";
+import type {
+  PageOption,
+  ComboboxOption,
+  SelectedOption,
+} from "~/components/types";
 
-async function getTabUrl() {
+const selected = ref<SelectedOption>({ url: "", label: "" });
+const pageOptions = ref<PageOption[]>([]);
+
+async function getCurrentOption() {
   try {
     const { url } = await sendMessage("get-current-tab", {});
-    const currentOption = storageComboboxOptions.value.find(
-      (i) => i.value === url
-    );
-    if (!currentOption) {
-      storageComboboxOptions.value[0] = { value: url, label: "current page" };
-      storageSelectedUrl.value = url;
-    } else {
-      storageSelectedUrl.value = currentOption.value;
+
+    if (pageOptions.value.length === 0) {
+      pageOptions.value.push({
+        id: url,
+        comboboxOption: {
+          value: url,
+          label: "current page",
+        },
+      });
+
+      selected.value = {
+        url,
+        label: "current page",
+      };
     }
-    console.log('url: ', url)
+
+    console.log("url: ", url);
   } catch (error) {
     console.error(error);
   }
 }
-getTabUrl();
+getCurrentOption();
+
+const comboboxOptions = computed<ComboboxOption[]>(() =>
+  pageOptions.value.map((item) => item.comboboxOption)
+);
 </script>
 
 <template>
@@ -39,12 +59,15 @@ getTabUrl();
   </header>
   <main class="w-[400px] h-[410px] p-2 flex flex-col">
     <div class="flex flex-wrap items-end">
-      <arcticons-earth class="size-9 text-info icon-btn" @click="getTabUrl" />
+      <arcticons-earth
+        class="size-9 text-info icon-btn"
+        @click="getCurrentOption"
+      />
       <Combobox
         class="mx-2 grow"
-        v-model:selected="storageSelectedUrl"
-        v-model:label="storageSelectedLabel"
-        v-model:options="storageComboboxOptions"
+        v-model:selected="selected.url"
+        v-model:label="selected.label"
+        v-model:options="comboboxOptions"
       />
       <!-- <button class="btn btn-sm btn-success box-border h-9 text-zinc-50">
         <mingcute-check-2-fill class="text-xl" />
