@@ -6,10 +6,12 @@ import type {
   PageOption,
   ComboboxOption,
   SelectedOption,
+  TimeLineOption,
 } from "~/components/types";
 
 const selected = ref<SelectedOption>({ url: "", label: "" });
 const pageOptions = ref<PageOption[]>([]);
+const timeLineOption = ref<TimeLineOption[]>([{ startTime: "", endTime: "" }]);
 
 async function getCurrentOption() {
   try {
@@ -86,7 +88,7 @@ const comboboxOptions = computed<ComboboxOption[]>(() =>
     <div
       class="flex-1 z-10 overflow-y-auto border rounded-md shadow-md my-3 p-2 dark:border-indigo-400"
     >
-      <TimeLine />
+      <TimeLine v-model:options="timeLineOption" />
     </div>
     <div>
       <button

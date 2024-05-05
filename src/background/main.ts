@@ -40,7 +40,7 @@ browser.tabs.onActivated.addListener(async ({ tabId }) => {
 
 onMessage('get-current-tab', async () => {
   try {
-    const [tab] = await browser.tabs.query({ active: true })
+    const [tab] = await browser.tabs.query({ active: true, highlighted: true, lastFocusedWindow: true })
     return {
       url: tab?.url ?? '',
     }
