@@ -35,6 +35,11 @@ export const sharedConfig: UserConfig = {
           ],
         },
       ],
+      resolvers: [
+        IconsResolver({
+          componentPrefix: "icon",
+        }),
+      ],
       dts: r('src/auto-imports.d.ts'),
     }),
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { sendMessage } from "webext-bridge/popup";
 import { storageselectedOption, storagePageOptions } from "~/logic/storage";
-import { ref, computed } from "vue";
+import { ref, markRaw, computed } from "vue";
 import type {
   PageOption,
   ComboboxOption,
@@ -12,6 +12,13 @@ import type {
 const selected = ref<SelectedOption>({ url: "", label: "" });
 const pageOptions = ref<PageOption[]>([]);
 const timeLineOption = ref<TimeLineOption[]>([{ startTime: "", endTime: "" }]);
+
+const saveStatus = {
+  loading: markRaw(IconSvgSpinnersRingResize),
+  info: markRaw(IconFluentSave24Regular),
+  success: markRaw(IconLineMdCircleTwotoneToConfirmCircleTwotoneTransition),
+};
+const saveIcon = ref(saveStatus.info);
 
 async function getCurrentOption() {
   try {
@@ -42,6 +49,22 @@ getCurrentOption();
 const comboboxOptions = computed<ComboboxOption[]>(() =>
   pageOptions.value.map((item) => item.comboboxOption)
 );
+
+async function savePageOptions() {
+  saveIcon.value = saveStatus.loading;
+  await new Promise((resolve) =>
+    setTimeout(() => {
+      saveIcon.value = saveStatus.success;
+      resolve(null)
+    }, 1000)
+  );
+  
+  setTimeout(() => {
+    if (saveIcon.value.name === saveStatus.success.name) {
+      saveIcon.value = saveStatus.info;
+    }
+  }, 1500);
+}
 </script>
 
 <template>
@@ -92,10 +115,16 @@ const comboboxOptions = computed<ComboboxOption[]>(() =>
     </div>
     <div>
       <button
+        @click="savePageOptions"
         class="btn btn-block bg-gradient-to-r from-cyan-500 to-blue-500 text-zinc-200 dark:bg-gradient-to-r dark:from-cyan-600 dark:to-purple-600"
+        :class="saveIcon.name === saveStatus.loading.name && 'btn-disabled opacity-70'"
       >
-        <fluent-save-24-regular class="text-lg" />
-        <span class="text-xl">save</span>
+        <component
+          :is="saveIcon"
+          class="text-lg"
+          :class="saveIcon.name === saveStatus.success.name && 'text-green-500'"
+        />
+        <span class="text-xl">Save</span>
       </button>
     </div>
   </main>
