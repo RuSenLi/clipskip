@@ -122,7 +122,7 @@ function setSecond(e: Event, index: number) {
         </div>
       </li>
       <TooltipProvider v-if="options.length > 1">
-        <TooltipRoot :delay-duration="200">
+        <TooltipRoot :delay-duration="200" disableClosingTrigger>
           <TooltipTrigger
             class="icno-close opacity-0 absolute btn btn-sm btn-circle -right-1 top-2 border-none hover:text-white hover:bg-red-500"
           >
@@ -140,7 +140,7 @@ function setSecond(e: Event, index: number) {
               >
                 Yes
               </button>
-              <TooltipArrow class="fill-white" :width="8" />
+              <TooltipArrow class="fill-white dark:fill-zinc-700" :width="8" />
             </TooltipContent>
           </TooltipPortal>
         </TooltipRoot>
