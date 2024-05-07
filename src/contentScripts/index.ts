@@ -14,6 +14,15 @@ import '../styles'
     console.log(`[vitesse-webext] Navigate from page "${data.title}"`)
   })
 
+  onMessage('update-video-skip', async () => {
+    const video = document.querySelectorAll('video')
+    console.log('video', video)
+    if (video.length === 0) {
+      return false
+    }
+    return true
+  })
+
   // mount component to context window
   const container = document.createElement('div')
   container.id = __NAME__

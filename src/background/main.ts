@@ -43,11 +43,13 @@ onMessage('get-current-tab', async () => {
     const [tab] = await browser.tabs.query({ active: true, highlighted: true, lastFocusedWindow: true })
     return {
       url: tab?.url ?? '',
+      id: tab?.id ?? -1
     }
   }
   catch {
     return {
       url: '',
+      id: -1
     }
   }
 })

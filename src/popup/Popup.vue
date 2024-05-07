@@ -12,17 +12,12 @@ import type {
 const selected = ref<SelectedOption>({ url: "", label: "" });
 const pageOptions = ref<PageOption[]>([]);
 const timeLineOption = ref<TimeLineOption[]>([{ startTime: "", endTime: "" }]);
-
-const saveStatus = {
-  loading: markRaw(IconSvgSpinnersRingResize),
-  info: markRaw(IconFluentSave24Regular),
-  success: markRaw(IconLineMdCircleTwotoneToConfirmCircleTwotoneTransition),
-};
-const saveIcon = ref(saveStatus.info);
+const tabId = ref(0);
 
 async function getCurrentOption() {
   try {
-    const { url } = await sendMessage("get-current-tab", {});
+    const { url, id } = await sendMessage("get-current-tab", {});
+    tabId.value = id;
 
     if (pageOptions.value.length === 0) {
       pageOptions.value.push({
@@ -50,20 +45,31 @@ const comboboxOptions = computed<ComboboxOption[]>(() =>
   pageOptions.value.map((item) => item.comboboxOption)
 );
 
-async function savePageOptions() {
-  saveIcon.value = saveStatus.loading;
-  await new Promise((resolve) =>
-    setTimeout(() => {
-      saveIcon.value = saveStatus.success;
-      resolve(null)
-    }, 1000)
-  );
-  
-  setTimeout(() => {
-    if (saveIcon.value.name === saveStatus.success.name) {
-      saveIcon.value = saveStatus.info;
+const workingIconOptions = {
+  info: markRaw(IconFluentFilmstripPlay24Filled),
+  loading: markRaw(IconSvgSpinnersRingResize),
+  success: markRaw(IconLineMdCircleTwotoneToConfirmCircleTwotoneTransition),
+};
+const workingStatus = ref<keyof typeof workingIconOptions>("info");
+const workingIcon = computed(() => workingIconOptions[workingStatus.value]);
+
+async function updateVideoSkip() {
+  workingStatus.value = "loading";
+  try {
+    const isSuccess = await sendMessage(
+      "update-video-skip",
+      timeLineOption.value,
+      { context: "content-script", tabId: tabId.value }
+    );
+    if (isSuccess) {
+      workingStatus.value = "success";
+    } else {
+      workingStatus.value = "info";
     }
-  }, 1500);
+  } catch (error) {
+    console.error(error);
+    workingStatus.value = "info";
+  }
 }
 </script>
 
@@ -94,19 +100,51 @@ async function savePageOptions() {
         v-model:label="selected.label"
         v-model:options="comboboxOptions"
       />
-      <!-- <button class="btn btn-sm btn-success box-border h-9 text-zinc-50">
-        <mingcute-check-2-fill class="text-xl" />
-      </button> -->
-      <div
-        class="tooltip tooltip-error before:-left-5 before:text-zinc-50 before:tracking-widest"
-        data-tip="未找到视频，请重试"
-      >
-        <button
-          class="btn btn-sm h-9 box-border bg-red-500 text-zinc-50 hover:bg-red-600"
+      <TooltipProvider>
+        <TooltipRoot
+          :delay-duration="100"
+          disableClosingTrigger
+          disableHoverableContent
         >
-          <mdi-refresh class="text-xl" />
-        </button>
-      </div>
+          <TooltipTrigger
+            class="h-9 box-border text-zinc-50 bg-red-500 hover:bg-red-600"
+            :class="[
+              workingStatus === 'loading' &&
+                'bg-zinc-600 cursor-not-allowed opacity-70',
+              workingStatus === 'success' && 'bg-green-500 hover:bg-green-600',
+            ]"
+          >
+            <line-md-confirm
+              v-if="workingStatus === 'success'"
+              class="text-xl"
+            />
+            <mdi-refresh v-else class="text-xl" />
+          </TooltipTrigger>
+          <TooltipPortal>
+            <TooltipContent
+              class="z-20 font-semibold animate-bounce text-zinc-50 data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade select-none rounded-[4px] px-[15px] py-[10px] text-[15px] leading-none shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] will-change-[transform,opacity]"
+              :class="
+                workingStatus === 'success' ? 'bg-green-600' : 'bg-red-400'
+              "
+              :side-offset="5"
+            >
+              {{
+                workingStatus === "success"
+                  ? "Skipping video clip has taken effect 🎉🎬"
+                  : "Video not found, click to retry 🔄"
+              }}
+              <TooltipArrow
+                :class="
+                  workingStatus === 'success'
+                    ? 'fill-green-600'
+                    : 'fill-red-400'
+                "
+                :width="8"
+              />
+            </TooltipContent>
+          </TooltipPortal>
+        </TooltipRoot>
+      </TooltipProvider>
     </div>
     <div
       class="flex-1 z-10 overflow-y-auto border rounded-md shadow-md my-3 p-2 dark:border-indigo-400"
@@ -115,16 +153,16 @@ async function savePageOptions() {
     </div>
     <div>
       <button
-        @click="savePageOptions"
+        @click="updateVideoSkip"
         class="btn btn-block bg-gradient-to-r from-cyan-500 to-blue-500 text-zinc-200 dark:bg-gradient-to-r dark:from-cyan-600 dark:to-purple-600"
-        :class="saveIcon.name === saveStatus.loading.name && 'btn-disabled opacity-70'"
+        :class="workingStatus === 'loading' && 'btn-disabled opacity-70'"
       >
         <component
-          :is="saveIcon"
+          :is="workingIcon"
           class="text-lg"
-          :class="saveIcon.name === saveStatus.success.name && 'text-green-500'"
+          :class="workingStatus === 'success' && 'text-green-500'"
         />
-        <span class="text-xl">Save</span>
+        <span class="text-lg">Update video skip</span>
       </button>
     </div>
   </main>
