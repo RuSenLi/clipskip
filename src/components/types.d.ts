@@ -18,5 +18,5 @@ export interface TimeLineOption {
 export type PageOption = {
   id: string;
   comboboxOption: ComboboxOption;
-  timeLineOptions?: TimeLineOption[];
+  timeLineOptions: TimeLineOption[];
 }

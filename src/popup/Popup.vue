@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { sendMessage } from "webext-bridge/popup";
-import { storageselectedOption, storagePageOptions } from "~/logic/storage";
+import {
+  storageSelectedOption,
+  storagePageOptions,
+  storageWorkingStatus,
+} from "~/logic/storage";
 import { ref, markRaw, computed } from "vue";
 import type {
   PageOption,
@@ -8,6 +12,7 @@ import type {
   SelectedOption,
   TimeLineOption,
 } from "~/components/types";
+import dayjs from "dayjs";
 
 const selected = ref<SelectedOption>({ url: "", label: "" });
 const pageOptions = ref<PageOption[]>([]);
@@ -18,6 +23,32 @@ async function getCurrentOption() {
   try {
     const { url, id } = await sendMessage("get-current-tab", {});
     tabId.value = id;
+    console.log("url: ", url);
+
+    console.log("select", storageSelectedOption.value);
+    console.log("pageOptions", storagePageOptions.value);
+
+    const CurrentOption = storagePageOptions.value.find(
+      (item) => item.id === url
+    );
+    if (CurrentOption) {
+      const {
+        comboboxOption: { label, value: url },
+      } = CurrentOption;
+      selected.value = { label, url };
+      timeLineOption.value = CurrentOption.timeLineOptions;
+      return;
+    }
+
+    if (storageSelectedOption.value.id === url) {
+      const {
+        comboboxOption: { label, value: url },
+      } = storageSelectedOption.value;
+      selected.value = { label, url };
+      timeLineOption.value = storageSelectedOption.value.timeLineOptions;
+      workingStatus.value = storageWorkingStatus.value;
+      return;
+    }
 
     if (pageOptions.value.length === 0) {
       pageOptions.value.push({
@@ -26,6 +57,7 @@ async function getCurrentOption() {
           value: url,
           label: "current page",
         },
+        timeLineOptions: timeLineOption.value,
       });
 
       selected.value = {
@@ -33,8 +65,6 @@ async function getCurrentOption() {
         label: "current page",
       };
     }
-
-    console.log("url: ", url);
   } catch (error) {
     console.error(error);
   }
@@ -45,32 +75,94 @@ const comboboxOptions = computed<ComboboxOption[]>(() =>
   pageOptions.value.map((item) => item.comboboxOption)
 );
 
-const workingIconOptions = {
+const workingIconOptions: { [K in WorkingStatus]: any } = {
   info: markRaw(IconFluentFilmstripPlay24Filled),
   loading: markRaw(IconSvgSpinnersRingResize),
   success: markRaw(IconLineMdCircleTwotoneToConfirmCircleTwotoneTransition),
 };
-const workingStatus = ref<keyof typeof workingIconOptions>("info");
+const workingStatus = ref<WorkingStatus>("info");
 const workingIcon = computed(() => workingIconOptions[workingStatus.value]);
+
+const openStatusTip = ref(false);
+
+function showStatusTip(ms: number = 3000) {
+  openStatusTip.value = true;
+  setTimeout(() => {
+    openStatusTip.value = false;
+  }, ms);
+}
+
+watch(workingStatus, (v) => {
+  if (v === "loading") {
+    openStatusTip.value = false;
+  } else {
+    showStatusTip();
+  }
+});
+
+function updateStoragePageOptions() {
+  const { url, label } = selected.value;
+  const index = pageOptions.value.findIndex((item) => item.id === url);
+  const option = {
+    id: url,
+    comboboxOption: {
+      label,
+      value: url,
+    },
+    timeLineOptions: timeLineOption.value,
+  };
+  if (index === -1) {
+    storagePageOptions.value.push(option);
+  }
+  storagePageOptions.value[index] = option;
+  storageSelectedOption.value = option;
+}
 
 async function updateVideoSkip() {
   workingStatus.value = "loading";
+  const now = dayjs();
+
+  updateStoragePageOptions();
   try {
-    const isSuccess = await sendMessage(
+    const status = await sendMessage(
       "update-video-skip",
       timeLineOption.value,
       { context: "content-script", tabId: tabId.value }
     );
-    if (isSuccess) {
-      workingStatus.value = "success";
-    } else {
-      workingStatus.value = "info";
+    // Prevent the status tip from flashing
+    if (dayjs().diff(now, "ms") < 500) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
     }
+
+    workingStatus.value = status;
   } catch (error) {
     console.error(error);
     workingStatus.value = "info";
   }
 }
+
+watch(
+  selected,
+  (v) => {
+    const { url, label } = v;
+    console.log("selected", v);
+    if (url) {
+      storageSelectedOption.value.id = url;
+      storageSelectedOption.value.comboboxOption = { label, value: url };
+      console.log("option", storageSelectedOption.value);
+    }
+  },
+  { deep: true }
+);
+
+watch(
+  timeLineOption,
+  (v) => {
+    storageSelectedOption.value.timeLineOptions = v;
+    console.log("watch time", storageSelectedOption.value);
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -103,16 +195,20 @@ async function updateVideoSkip() {
       <TooltipProvider>
         <TooltipRoot
           :delay-duration="100"
+          :open="openStatusTip"
           disableClosingTrigger
           disableHoverableContent
         >
           <TooltipTrigger
-            class="h-9 box-border text-zinc-50 bg-red-500 hover:bg-red-600"
+            class="h-9 cursor-auto box-border px-3 rounded-lg text-zinc-50"
             :class="[
               workingStatus === 'loading' &&
-                'bg-zinc-600 cursor-not-allowed opacity-70',
+                'bg-zinc-600 pointer-events-none opacity-70',
               workingStatus === 'success' && 'bg-green-500 hover:bg-green-600',
+              workingStatus === 'info' && 'bg-red-500 hover:bg-red-600',
             ]"
+            @mouseenter="openStatusTip = true"
+            @mouseleave="openStatusTip = false"
           >
             <line-md-confirm
               v-if="workingStatus === 'success'"
@@ -130,8 +226,8 @@ async function updateVideoSkip() {
             >
               {{
                 workingStatus === "success"
-                  ? "Skipping video clip has taken effect 🎉🎬"
-                  : "Video not found, click to retry 🔄"
+                  ? "Status: Success 🎉🎬"
+                  : "Status: Error Video not found 🚫🎬"
               }}
               <TooltipArrow
                 :class="
@@ -154,7 +250,7 @@ async function updateVideoSkip() {
     <div>
       <button
         @click="updateVideoSkip"
-        class="btn btn-block bg-gradient-to-r from-cyan-500 to-blue-500 text-zinc-200 dark:bg-gradient-to-r dark:from-cyan-600 dark:to-purple-600"
+        class="btn btn-block hover:from-cyan-600 hover:to-blue-600 dark:hover:from-cyan-700 dark:hover:to-purple-700 bg-gradient-to-r from-cyan-500 to-blue-500 text-zinc-200 dark:bg-gradient-to-r dark:from-cyan-600 dark:to-purple-600"
         :class="workingStatus === 'loading' && 'btn-disabled opacity-70'"
       >
         <component

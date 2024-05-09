@@ -2,6 +2,11 @@
 import { useToggle } from '@vueuse/core'
 
 const [show, toggle] = useToggle(false)
+
+function getVideo() {
+  const video = document.querySelectorAll('video')
+  console.log('get video', video)
+}
 </script>
 
 <template>
@@ -14,6 +19,7 @@ const [show, toggle] = useToggle(false)
     >
       <h1 class="text-lg">
         Vitesse WebExt
+        <button class="btn" @click="getVideo">get Video</button>
       </h1>
       <SharedSubtitle />
     </div>

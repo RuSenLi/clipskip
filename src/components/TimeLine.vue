@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TimeLineOption } from "~/components/types";
-import { formatTime } from "~/utils";
+import { formatTime, parseTime } from "~/utils";
 import { useDebounceFn } from "@vueuse/core";
 import {
   TooltipArrow,
@@ -30,14 +30,6 @@ function formatInput(e: Event, index: number, key: "startTime" | "endTime") {
   const value = formatTime((e.target as HTMLInputElement)?.value);
   options.value[index][key] = value;
   debouncedTime(value, index, key);
-}
-
-function parseTime(time: string) {
-  if (!time) {
-    return null;
-  }
-  const [second, minute, hour] = time.split(":").reverse();
-  return { second, minute, hour };
 }
 
 function setSecond(e: Event, index: number) {

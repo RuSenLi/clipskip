@@ -10,6 +10,6 @@ declare module "webext-bridge" {
       { tabId?: number },
       { url: string; id: number }
     >;
-    "update-video-skip": ProtocolWithReturn<TimeLineOption[], boolean>;
+    "update-video-skip": ProtocolWithReturn<TimeLineOption[], "success" | "info">;
   }
 }
