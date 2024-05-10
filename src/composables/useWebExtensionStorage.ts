@@ -11,7 +11,7 @@ import type { MaybeRefOrGetter, RemovableRef } from '@vueuse/shared'
 import type { Ref } from 'vue-demi'
 import type { Storage } from 'webextension-polyfill'
 
-export type WebExtensionStorageOptions<T> = UseStorageAsyncOptions<T>
+export type WebExtensionStorageOptions<T> = UseStorageAsyncOptions<T> & { type?: 'local' | 'session' }
 
 // https://github.com/vueuse/vueuse/blob/658444bf9f8b96118dbd06eba411bb6639e24e88/packages/core/useStorage/guess.ts
 export function guessSerializerType(rawInit: unknown) {
@@ -34,7 +34,7 @@ export function guessSerializerType(rawInit: unknown) {
                   : 'number'
 }
 
-const storageInterface: StorageLikeAsync = {
+const localInterface: StorageLikeAsync = {
   removeItem(key: string) {
     return storage.local.remove(key)
   },
@@ -45,6 +45,22 @@ const storageInterface: StorageLikeAsync = {
 
   async getItem(key: string) {
     const storedData = await storage.local.get(key)
+
+    return storedData[key]
+  },
+}
+
+const sessionInterface: StorageLikeAsync = {
+  removeItem(key: string) {
+    return storage.session.remove(key)
+  },
+
+  setItem(key: string, value: string) {
+    return storage.session.set({ [key]: value })
+  },
+
+  async getItem(key: string) {
+    const storedData = await storage.session.get(key)
 
     return storedData[key]
   },
@@ -63,6 +79,7 @@ export function useWebExtensionStorage<T>(
   options: WebExtensionStorageOptions<T> = {},
 ): RemovableRef<T> {
   const {
+    type: stroageType = 'local',
     flush = 'pre',
     deep = true,
     listenToStorageChanges = true,
@@ -80,6 +97,8 @@ export function useWebExtensionStorage<T>(
 
   const data = (shallow ? shallowRef : ref)(initialValue) as Ref<T>
   const serializer = options.serializer ?? StorageSerializers[type]
+
+  const storageInterface = stroageType === 'local' ? localInterface : sessionInterface
 
   async function read(event?: { key: string, newValue: string | null }) {
     if (event && event.key !== key)
